@@ -10,14 +10,7 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { name, phone, password, role } = registerSchema.parse(req.body);
 
-    // Normalize phone: ensure +880 prefix
-    const normalizedPhone = phone.startsWith("0")
-      ? `+880${phone.slice(1)}`
-      : phone.startsWith("880")
-      ? `+${phone}`
-      : phone;
-
-    const existingUser = await User.findOne({ phone: normalizedPhone });
+    const existingUser = await User.findOne({ phone: phone });
     if (existingUser) {
       return res
         .status(400)
@@ -27,7 +20,7 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await hashPassword(password);
     const user = new User({
       name,
-      phone: normalizedPhone,
+      phone: phone,
       password: hashedPassword,
       role,
     });
@@ -48,7 +41,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({
       message: "User registered successfully",
-      user: { id: user._id, name, phone: normalizedPhone, role },
+      user: { id: user._id, name, phone: phone, role },
     });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
@@ -58,15 +51,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { phone, password } = loginSchema.parse(req.body);
 
-    const normalizedPhone = phone.startsWith("0")
-      ? `+880${phone.slice(1)}`
-      : phone.startsWith("880")
-      ? `+${phone}`
-      : phone;
-
-    const user = await User.findOne({ phone: normalizedPhone }).populate(
-      "wallet"
-    );
+    const user = await User.findOne({ phone: phone }).populate("wallet");
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isMatch = await comparePassword(password, user.password);

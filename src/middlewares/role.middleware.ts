@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from "express";
 
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    if (!req.user)
+      return res.status(401).json({ message: "You Are Not Authorized" });
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Forbidden" });
+      return res.status(403).json({ message: "You Are Not Authorized" });
     }
     next();
   };

@@ -11,10 +11,11 @@ import {
   sendMoney,
   withdrawMoney,
 } from "../modules/wallet/wallet.controller";
+import { checkBlocked } from "../middlewares/blockCheck.middleware";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate, checkBlocked);
 
 router.post("/top-up", validate(addMoneySchema), addMoney);
 router.post("/withdraw", validate(addMoneySchema), withdrawMoney);
