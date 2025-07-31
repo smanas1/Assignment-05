@@ -3,7 +3,6 @@ import { Document, Schema, model } from "mongoose";
 export interface IWallet extends Document {
   owner: Schema.Types.ObjectId;
   balance: number;
-
   createdAt: Date;
 }
 

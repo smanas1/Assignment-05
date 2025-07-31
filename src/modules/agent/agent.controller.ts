@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { agentTransactionSchema } from "../wallet/wallet.validator";
-import { User } from "../user/User.model";
+import { IUser, User } from "../user/User.model";
 import { Transaction } from "../transaction/Transaction.model";
+import { HydratedDocument, ObjectId } from "mongoose";
+import { Wallet } from "../wallet/Wallet.model";
 
 export const cashIn = async (req: Request, res: Response) => {
   try {
@@ -20,7 +22,14 @@ export const cashIn = async (req: Request, res: Response) => {
     wallet.balance += amount;
     await wallet.save();
 
-    const commission = amount * 0.01; // 1% commission
+    const commission = amount * 0.01;
+
+    const agentWallet = await Wallet.findById(agent.wallet);
+    if (!agentWallet) {
+      return res.status(404).json({ message: "Agent wallet not found" });
+    }
+    agentWallet.balance += commission;
+    await agentWallet.save();
 
     await Transaction.create({
       type: "cash-in",
@@ -31,11 +40,22 @@ export const cashIn = async (req: Request, res: Response) => {
       description: `Cash-in by agent ${agent.name}`,
       commission,
     });
+    //  Record commission income for agent
+    await Transaction.create({
+      type: "commission-earned",
+      amount: commission,
+      sender: user._id,
+      receiver: agent._id,
+      wallet: agentWallet._id,
+      description: `Commission from cash-in (${amount})`,
+      commission: 0,
+    });
 
     res.json({
       message: "Cash-in successful",
       balance: wallet.balance,
       commission,
+      agentWalletBalance: agentWallet.balance,
     });
   } catch (err: any) {
     res.status(500).json({ message: err.message });
@@ -63,7 +83,16 @@ export const cashOut = async (req: Request, res: Response) => {
     wallet.balance -= amount;
     await wallet.save();
 
-    const commission = amount * 0.015; // 1.5% commission
+    const commission = amount * 0.015;
+
+    // Add commission to agent's wallet
+    const agentWallet = await Wallet.findById(agent.wallet);
+    if (!agentWallet) {
+      return res.status(404).json({ message: "Agent wallet not found" });
+    }
+
+    agentWallet.balance += commission;
+    await agentWallet.save();
 
     await Transaction.create({
       type: "cash-out",
@@ -75,11 +104,44 @@ export const cashOut = async (req: Request, res: Response) => {
       commission,
     });
 
+    //  Record commission income
+    await Transaction.create({
+      type: "commission-earned",
+      amount: commission,
+      sender: user._id,
+      receiver: agent._id,
+      wallet: agentWallet._id,
+      description: `Commission from cash-out (${amount})`,
+    });
+
     res.json({
       message: "Cash-out successful",
       balance: wallet.balance,
       commission,
+      agentWalletBalance: agentWallet.balance,
     });
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+};
+// Commission History Endpoint
+export const getCommissionHistory = async (req: Request, res: Response) => {
+  try {
+    const agentId = req.user!.userId;
+    const agent = await User.findById(agentId).populate("wallet");
+
+    if (!agent) return res.status(404).json({ message: "Agent not found" });
+
+    const populatedAgent = agent as HydratedDocument<IUser> & {
+      wallet: { _id: string };
+    };
+    console.log(populatedAgent);
+    const transactions = await Transaction.find({
+      wallet: populatedAgent.wallet._id,
+      type: "commission-earned",
+    }).sort({ createdAt: -1 });
+
+    res.json(transactions);
   } catch (err: any) {
     res.status(500).json({ message: err.message });
   }

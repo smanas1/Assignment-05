@@ -7,7 +7,8 @@ export interface ITransaction extends Document {
     | "send-money"
     | "receive"
     | "cash-in"
-    | "cash-out";
+    | "cash-out"
+    | "commission-earned ";
   amount: number;
   sender?: Schema.Types.ObjectId;
   receiver?: Schema.Types.ObjectId;
