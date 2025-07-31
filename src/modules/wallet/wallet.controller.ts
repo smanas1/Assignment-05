@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { addMoneySchema, sendMoneySchema } from "./wallet.validator";
 import { User } from "../user/User.model";
 import { Transaction } from "../transaction/Transaction.model";
+import { ObjectId } from "mongoose";
 
 export const addMoney = async (req: Request, res: Response) => {
   try {
@@ -77,6 +78,15 @@ export const sendMoney = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     if (sender.isBlocked || receiver.isBlocked)
       return res.status(403).json({ message: "One wallet is blocked" });
+
+    if (
+      (sender._id as ObjectId).toString() ===
+      (receiver._id as ObjectId).toString()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "You cannot send money to yourself" });
+    }
 
     const senderWallet = sender.wallet as any;
     const receiverWallet = receiver.wallet as any;
