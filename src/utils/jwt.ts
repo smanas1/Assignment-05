@@ -1,10 +1,8 @@
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "../types";
-import dotenv from "dotenv";
+import { env } from "../config/env";
 
-dotenv.config();
-const secret = process.env.JWT_SECRET;
-const expiresIn = process.env.JWT_EXPIRES_IN! || "3d";
+const secret = env.JWT_SECRET;
 
 if (!secret) {
   throw new Error("JWT_SECRET is not defined. Please set it in .env");

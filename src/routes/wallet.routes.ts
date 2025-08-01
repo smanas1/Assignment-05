@@ -7,6 +7,7 @@ import {
 } from "../modules/wallet/wallet.validator";
 import {
   addMoney,
+  getBalance,
   getTransactions,
   sendMoney,
   withdrawMoney,
@@ -21,5 +22,6 @@ router.post("/top-up", validate(addMoneySchema), addMoney);
 router.post("/withdraw", validate(addMoneySchema), withdrawMoney);
 router.post("/send-money", validate(sendMoneySchema), sendMoney);
 router.get("/transactions", getTransactions);
+router.get("/balance", getBalance);
 
 export default router;

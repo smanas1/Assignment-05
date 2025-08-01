@@ -140,3 +140,24 @@ export const getTransactions = async (req: Request, res: Response) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// Get current user's wallet balance
+export const getBalance = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+
+    const user = await User.findById(userId).populate("wallet");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const wallet = user.wallet as any;
+    res.json({
+      balance: wallet.balance,
+      updatedAt: wallet.createdAt,
+    });
+  } catch (err: any) {
+    console.error("Get balance error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
