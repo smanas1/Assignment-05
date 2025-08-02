@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
 import { loginSchema, registerSchema } from "./auth.validator";
 import { User } from "../user/User.model";
@@ -40,11 +41,29 @@ export const register = async (req: Request, res: Response) => {
     res.cookie("token", token, { httpOnly: true });
 
     res.status(201).json({
+      success: true,
       message: "User registered successfully",
       user: { id: user._id, name, phone: phone, role },
     });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    // Handle Zod validation errors
+    if (err.name === "ZodError") {
+      const errors = err.errors.map((e: any) => ({
+        field: e.path.join("."),
+        message: e.message,
+      }));
+
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed.",
+        errors,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Registration failed. Please try again later.",
+    });
   }
 };
 export const login = async (req: Request, res: Response) => {
@@ -56,10 +75,14 @@ export const login = async (req: Request, res: Response) => {
 
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch)
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ message: "Invalid phone number or password." });
 
     if (user.isBlocked && user.role !== "admin") {
-      return res.status(403).json({ message: "Account is blocked" });
+      return res.status(403).json({
+        message: "Your account has been blocked. Please contact support.",
+      });
     }
 
     const token = generateToken({
@@ -80,6 +103,22 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (err: any) {
-    res.status(500).json({ message: err.message });
+    if (err.name === "ZodError") {
+      const errors = err.errors.map((e: any) => ({
+        field: e.path.join("."),
+        message: e.message,
+      }));
+
+      return res.status(400).json({
+        success: false,
+        message: "Invalid request format.",
+        errors,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Login failed. Please try again later.",
+    });
   }
 };

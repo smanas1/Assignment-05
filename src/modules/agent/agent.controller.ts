@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
 import { agentTransactionSchema } from "../wallet/wallet.validator";
 import { IUser, User } from "../user/User.model";
 import { Transaction } from "../transaction/Transaction.model";
-import { HydratedDocument, ObjectId } from "mongoose";
+import { HydratedDocument } from "mongoose";
 import { Wallet } from "../wallet/Wallet.model";
 import { env } from "../../config/env";
 

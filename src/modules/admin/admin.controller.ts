@@ -3,8 +3,7 @@ import { User } from "../user/User.model";
 import { Wallet } from "../wallet/Wallet.model";
 import { Transaction } from "../transaction/Transaction.model";
 
-// Get all regular users
-export const getAllUsers = async (_req: Request, res: Response) => {
+export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({ role: "user" }).select("-password");
     res.status(200).json({
@@ -22,8 +21,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   }
 };
 
-// Get all agents
-export const getAllAgents = async (_req: Request, res: Response) => {
+export const getAllAgents = async (req: Request, res: Response) => {
   try {
     const agents = await User.find({ role: "agent" }).select("-password");
     res.status(200).json({
@@ -41,8 +39,7 @@ export const getAllAgents = async (_req: Request, res: Response) => {
   }
 };
 
-// Get all wallets with owner info
-export const getAllWallets = async (_req: Request, res: Response) => {
+export const getAllWallets = async (req: Request, res: Response) => {
   try {
     const wallets = await Wallet.find().populate("owner", "name email");
     res.status(200).json({
@@ -60,8 +57,7 @@ export const getAllWallets = async (_req: Request, res: Response) => {
   }
 };
 
-// Get all transactions with populated sender, receiver, and wallet
-export const getAllTransactions = async (_req: Request, res: Response) => {
+export const getAllTransactions = async (req: Request, res: Response) => {
   try {
     const transactions = await Transaction.find().populate(
       "sender receiver wallet",
@@ -82,7 +78,6 @@ export const getAllTransactions = async (_req: Request, res: Response) => {
   }
 };
 
-// Block a user
 export const blockUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
@@ -108,14 +103,12 @@ export const blockUser = async (req: Request, res: Response) => {
         message: "Admin users cannot be blocked.",
       });
     }
-
     user.isBlocked = true;
     await user.save();
 
     res.status(200).json({
       success: true,
       message: "User has been blocked successfully.",
-      data: { userId: user._id, name: user.name },
     });
   } catch (error) {
     res.status(500).json({
@@ -126,7 +119,6 @@ export const blockUser = async (req: Request, res: Response) => {
   }
 };
 
-// Unblock a user
 export const unblockUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
@@ -149,10 +141,9 @@ export const unblockUser = async (req: Request, res: Response) => {
     user.isBlocked = false;
     await user.save();
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: "User has been unblocked successfully.",
-      data: { userId: user._id, name: user.name },
     });
   } catch (error) {
     res.status(500).json({
@@ -163,7 +154,6 @@ export const unblockUser = async (req: Request, res: Response) => {
   }
 };
 
-// Suspend an agent
 export const suspendAgent = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
@@ -193,11 +183,7 @@ export const suspendAgent = async (req: Request, res: Response) => {
     agent.isBlocked = true;
     await agent.save();
 
-    res.status(200).json({
-      success: true,
-      message: "Agent has been suspended successfully.",
-      data: { userId: agent._id, name: agent.name },
-    });
+    res.json({ success: true, message: "Agent suspended successfully" });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -207,7 +193,6 @@ export const suspendAgent = async (req: Request, res: Response) => {
   }
 };
 
-// Activate a suspended agent
 export const activateAgent = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
@@ -240,7 +225,7 @@ export const activateAgent = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: "Agent has been reactivated successfully.",
-      data: { userId: agent._id, name: agent.name, email: agent.email },
+      data: { userId: agent._id, name: agent.name },
     });
   } catch (error) {
     res.status(500).json({
