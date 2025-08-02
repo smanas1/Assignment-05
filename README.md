@@ -2,7 +2,44 @@
 
 ## Project Overview
 
-This project is a digital wallet management system built with Node.js, Express, TypeScript, and MongoDB. It allows users to register, manage their wallet, send and receive money, and agents/admins to perform specialized operations. The system supports user authentication, role-based access, and transaction history.
+A digital wallet management system built with Node.js, Express, TypeScript, and MongoDB. Users can register, manage wallets, send/receive money, and agents/admins have specialized operations. The system supports authentication, role-based access, and transaction history.
+
+## Setup & Environment Instructions
+
+1. **Clone the repository**
+   ```sh
+   git clone <repo-url>
+   cd assignment-05
+   ```
+
+2. **Install dependencies**
+   ```sh
+   npm install
+   ```
+
+3. **Configure environment variables**
+
+   Create a `.env` file in the root directory with the following variables:
+   ```
+   PORT=5000
+   MONGO_URI=<your-mongodb-uri>
+   JWT_SECRET=<your-jwt-secret>
+   JWT_EXPIRES_IN=3d
+   CASH_IN_COMMISSION=0.02
+   CASH_OUT_COMMISSION=0.02
+   BCRYPT_SALT_ROUNDS=10
+   ```
+
+4. **Run the app in development**
+   ```sh
+   npm run dev
+   ```
+
+5. **Build for production**
+   ```sh
+   npm run build
+   npm start
+   ```
 
 ## Features
 
@@ -101,4 +138,4 @@ This project is a digital wallet management system built with Node.js, Express, 
 
 ---
 
-**Note:** All wallet, agent, and admin endpoints require authentication and appropriate role
+**Note:** All wallet, agent, and admin endpoints require authentication and
