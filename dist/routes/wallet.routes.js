@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const validation_middleware_1 = require("../middlewares/validation.middleware");
+const wallet_validator_1 = require("../modules/wallet/wallet.validator");
+const wallet_controller_1 = require("../modules/wallet/wallet.controller");
+const blockCheck_middleware_1 = require("../middlewares/blockCheck.middleware");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticate, blockCheck_middleware_1.checkBlocked);
+router.post("/top-up", (0, validation_middleware_1.validate)(wallet_validator_1.addMoneySchema), wallet_controller_1.addMoney);
+router.post("/withdraw", (0, validation_middleware_1.validate)(wallet_validator_1.addMoneySchema), wallet_controller_1.withdrawMoney);
+router.post("/send-money", (0, validation_middleware_1.validate)(wallet_validator_1.sendMoneySchema), wallet_controller_1.sendMoney);
+router.get("/transactions", wallet_controller_1.getTransactions);
+router.get("/balance", wallet_controller_1.getBalance);
+exports.default = router;
