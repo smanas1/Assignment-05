@@ -1,7 +1,4 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt";
-import { JwtPayload } from "../types";
-
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Express {
     interface Request {
@@ -9,6 +6,10 @@ declare global {
     }
   }
 }
+
+import { Request, Response, NextFunction } from "express";
+import { verifyToken } from "../utils/jwt";
+import { JwtPayload } from "../types";
 
 export const authenticate = (
   req: Request,
@@ -24,6 +25,7 @@ export const authenticate = (
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
+    console.error("Authentication failed:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };

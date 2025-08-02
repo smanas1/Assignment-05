@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 
@@ -9,7 +10,7 @@ export const validate = (schema: any) => {
     } catch (err) {
       if (err instanceof ZodError) {
         return res.status(400).json({
-          message: "Validation error",
+          message: "Invalid request data",
           errors: err.errors.map((e) => e.message),
         });
       }

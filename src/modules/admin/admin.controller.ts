@@ -3,83 +3,250 @@ import { User } from "../user/User.model";
 import { Wallet } from "../wallet/Wallet.model";
 import { Transaction } from "../transaction/Transaction.model";
 
-export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await User.find({ role: "user" }).select("-password");
-  res.json(users);
+// Get all regular users
+export const getAllUsers = async (_req: Request, res: Response) => {
+  try {
+    const users = await User.find({ role: "user" }).select("-password");
+    res.status(200).json({
+      success: true,
+      message: "Users retrieved successfully.",
+      data: users,
+      count: users.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve users.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
-export const getAllAgents = async (req: Request, res: Response) => {
-  const agents = await User.find({ role: "agent" }).select("-password");
-  res.json(agents);
+// Get all agents
+export const getAllAgents = async (_req: Request, res: Response) => {
+  try {
+    const agents = await User.find({ role: "agent" }).select("-password");
+    res.status(200).json({
+      success: true,
+      message: "Agents retrieved successfully.",
+      data: agents,
+      count: agents.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve agents.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
-export const getAllWallets = async (req: Request, res: Response) => {
-  const wallets = await Wallet.find().populate("owner", "name email");
-  res.json(wallets);
+// Get all wallets with owner info
+export const getAllWallets = async (_req: Request, res: Response) => {
+  try {
+    const wallets = await Wallet.find().populate("owner", "name email");
+    res.status(200).json({
+      success: true,
+      message: "Wallets retrieved successfully.",
+      data: wallets,
+      count: wallets.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve wallets.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
-export const getAllTransactions = async (req: Request, res: Response) => {
-  const transactions = await Transaction.find().populate(
-    "sender receiver wallet",
-    "name email balance"
-  );
-  res.json(transactions);
+// Get all transactions with populated sender, receiver, and wallet
+export const getAllTransactions = async (_req: Request, res: Response) => {
+  try {
+    const transactions = await Transaction.find().populate(
+      "sender receiver wallet",
+      "name email balance"
+    );
+    res.status(200).json({
+      success: true,
+      message: "Transactions retrieved successfully.",
+      data: transactions,
+      count: transactions.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve transactions.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
+// Block a user
 export const blockUser = async (req: Request, res: Response) => {
-  const { userId } = req.body;
+  try {
+    const { userId } = req.body;
 
-  const user = await User.findById(userId);
-  if (!user || user.role === "admin") {
-    return res
-      .status(404)
-      .json({ message: "User not found or cannot be blocked" });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required.",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Admin users cannot be blocked.",
+      });
+    }
+
+    user.isBlocked = true;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User has been blocked successfully.",
+      data: { userId: user._id, name: user.name },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while blocking the user.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-
-  user.isBlocked = true;
-  await user.save();
-
-  res.json({ message: "User blocked successfully" });
 };
 
+// Unblock a user
 export const unblockUser = async (req: Request, res: Response) => {
-  const { userId } = req.body;
+  try {
+    const { userId } = req.body;
 
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required.",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    user.isBlocked = false;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User has been unblocked successfully.",
+      data: { userId: user._id, name: user.name },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while unblocking the user.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-
-  user.isBlocked = false;
-  await user.save();
-
-  res.json({ message: "User unblocked successfully" });
 };
 
+// Suspend an agent
 export const suspendAgent = async (req: Request, res: Response) => {
-  const { userId } = req.body;
+  try {
+    const { userId } = req.body;
 
-  const agent = await User.findById(userId);
-  if (!agent || agent.role !== "agent") {
-    return res.status(404).json({ message: "Agent not found" });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Agent ID is required.",
+      });
+    }
+
+    const agent = await User.findById(userId);
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found.",
+      });
+    }
+
+    if (agent.role !== "agent") {
+      return res.status(400).json({
+        success: false,
+        message: "Only agents can be suspended.",
+      });
+    }
+
+    agent.isBlocked = true;
+    await agent.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Agent has been suspended successfully.",
+      data: { userId: agent._id, name: agent.name },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while suspending the agent.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-
-  agent.isBlocked = true;
-  await agent.save();
-
-  res.json({ message: "Agent suspended successfully" });
 };
 
+// Activate a suspended agent
 export const activateAgent = async (req: Request, res: Response) => {
-  const { userId } = req.body;
+  try {
+    const { userId } = req.body;
 
-  const agent = await User.findById(userId);
-  if (!agent || agent.role !== "agent") {
-    return res.status(404).json({ message: "Agent not found" });
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "Agent ID is required.",
+      });
+    }
+
+    const agent = await User.findById(userId);
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found.",
+      });
+    }
+
+    if (agent.role !== "agent") {
+      return res.status(400).json({
+        success: false,
+        message: "Only agents can be activated.",
+      });
+    }
+
+    agent.isBlocked = false;
+    await agent.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Agent has been reactivated successfully.",
+      data: { userId: agent._id, name: agent.name, email: agent.email },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while activating the agent.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-
-  agent.isBlocked = false;
-  await agent.save();
-
-  res.json({ message: "Agent activated successfully" });
 };
