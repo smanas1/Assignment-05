@@ -1,14 +1,6 @@
-import { Document, Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
+import { IUser } from "./user.interface";
 
-export interface IUser extends Document {
-  name: string;
-  phone: string;
-  password: string;
-  role: "user" | "agent" | "admin";
-  isBlocked: boolean;
-  wallet: Schema.Types.ObjectId;
-  createdAt: Date;
-}
 const userSchema = new Schema<IUser>({
   name: { type: String, required: true },
   phone: { type: String, required: true, unique: true },

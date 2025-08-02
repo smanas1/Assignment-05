@@ -28,7 +28,7 @@ const cashIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const wallet = user.wallet;
         wallet.balance += amount;
         yield wallet.save();
-        const commission = amount * parseInt(env_1.env.CASH_IN_COMMISSION);
+        const commission = amount * Number(env_1.env.CASH_IN_COMMISSION);
         const agentWallet = yield Wallet_model_1.Wallet.findById(agent.wallet);
         if (!agentWallet) {
             return res.status(404).json({ message: "Agent wallet not found" });
@@ -82,7 +82,7 @@ const cashOut = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         wallet.balance -= amount;
         yield wallet.save();
-        const commission = amount * parseInt(env_1.env.CASH_OUT_COMMISSION);
+        const commission = amount * Number(env_1.env.CASH_OUT_COMMISSION);
         // Add commission to agent's wallet
         const agentWallet = yield Wallet_model_1.Wallet.findById(agent.wallet);
         if (!agentWallet) {

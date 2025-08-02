@@ -1,10 +1,5 @@
-import { Document, Schema, model } from "mongoose";
-
-export interface IWallet extends Document {
-  owner: Schema.Types.ObjectId;
-  balance: number;
-  createdAt: Date;
-}
+import { Schema, model } from "mongoose";
+import { IWallet } from "./wallet.interface";
 
 const walletSchema = new Schema<IWallet>({
   owner: { type: Schema.Types.ObjectId, ref: "User", required: true },

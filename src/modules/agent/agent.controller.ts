@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from "express";
 import { agentTransactionSchema } from "../wallet/wallet.validator";
-import { IUser, User } from "../user/User.model";
+import { User } from "../user/User.model";
 import { Transaction } from "../transaction/Transaction.model";
 import { HydratedDocument } from "mongoose";
 import { Wallet } from "../wallet/Wallet.model";
 import { env } from "../../config/env";
+import { IUser } from "../user/user.interface";
 
 export const cashIn = async (req: Request, res: Response) => {
   try {
@@ -24,7 +25,7 @@ export const cashIn = async (req: Request, res: Response) => {
     wallet.balance += amount;
     await wallet.save();
 
-    const commission = amount * parseInt(env.CASH_IN_COMMISSION);
+    const commission = amount * Number(env.CASH_IN_COMMISSION);
 
     const agentWallet = await Wallet.findById(agent.wallet);
     if (!agentWallet) {
@@ -85,7 +86,7 @@ export const cashOut = async (req: Request, res: Response) => {
     wallet.balance -= amount;
     await wallet.save();
 
-    const commission = amount * parseInt(env.CASH_OUT_COMMISSION);
+    const commission = amount * Number(env.CASH_OUT_COMMISSION);
 
     // Add commission to agent's wallet
     const agentWallet = await Wallet.findById(agent.wallet);
